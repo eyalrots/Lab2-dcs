@@ -19,11 +19,11 @@
 // #define P2Mask         0xf0
 
 // LCDs abstraction
-// #define LCD_DATA_WRITE		P1OUT
-// #define LCD_DATA_DIR		P1DIR
-// #define LCD_DATA_READ		P1IN
-// #define LCD_DATA_SEL		P1SEL
-// #define LCD_CTL_SEL			P2SEL
+#define LCD_DATA_WRITE		P1OUT
+#define LCD_DATA_DIR		P1DIR
+#define LCD_DATA_READ		P1IN
+#define LCD_DATA_SEL		P1SEL
+#define LCD_CTL_SEL			P2SEL
 
 // Generator abstraction
 #define GenPort				P2IN
@@ -34,7 +34,7 @@
 // Buzzer abstraction
 #define BuzzPortSel			P2SEL
 #define BuzzPortDir			P2DIR
-#define BuzzPortDir			P2DIR
+#define BuzzPortOut			P2OUT
 
 // PushButtons abstraction
 #define PBsArrPort	       P1IN 
