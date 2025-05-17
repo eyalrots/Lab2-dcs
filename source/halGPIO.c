@@ -245,7 +245,7 @@ void DelayMs(unsigned int cnt){
 
 
 //*********************************************************************
-//            TimerA0 Interrupt Service Routine
+//            TimerA1 Interrupt Service Routine
 //*********************************************************************
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
 #pragma vector = TIMER1_A1_VECTOR

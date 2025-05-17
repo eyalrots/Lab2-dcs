@@ -42,8 +42,8 @@ void freqMeas(){
             N_SMCLK = 0.9*(REdge2 - REdge1)*tmp;
             freq = SMCLK_FREQ / N_SMCLK;       // Calculate Frequency
             real_freq = (unsigned int) freq ;
-            if (real_freq == 65535)  // delete later
-                continue;
+            // if (real_freq == 65535)  // delete later
+            //     continue;
             sprintf(strFreq, "%d", real_freq);
             write_freq_tmp_LCD();
             lcd_home();
