@@ -151,7 +151,7 @@ void write_freq_tmp_LCD(){
 void test_lcd_drivers(){
     lcd_clear();
     lcd_home();
-    const char test_txt[] = "first print :)";
+    const char test_txt[] = "Hello World!";
     lcd_puts(test_txt);
     lcd_new_line;
 }

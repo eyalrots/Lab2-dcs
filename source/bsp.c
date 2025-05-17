@@ -16,12 +16,12 @@ void GPIOconfig(void){
   
   // Generator Setup
   // From the table at CCIx P2.4
-  GenPortDir  &=  ~BIT4;              // P2.4 Input Capture = '1'
-  //GenPortSel  |=  ~BIT4;              // P2.4 Select = '1'
+  GenPortDir  &=  ~BIT4;              // P2.4 Input Capture('0')
+  GenPortSel  |=  BIT4;              // P2.4 Select = '1'
 
   // Buzzer Setup
   BuzzPortDir |=  BIT2;               // P2.2 Output compare = '1'
-  //BuzzPortSel |=  BIT2;               // P2.2 Select = '1'
+  BuzzPortSel |=  BIT2;               // P2.2 Select = '1'
   BuzzPortOut &=  ~BIT2;              // P2.2 out = '0'
   
   // PushButtons Setup
