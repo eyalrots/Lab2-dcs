@@ -11,6 +11,7 @@ extern void freqCounter();
 extern void tone_generator();
 extern void Signal_shape();
 extern void freqMeas();
+extern void count_timer();
 
 
 

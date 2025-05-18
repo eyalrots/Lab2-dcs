@@ -60,6 +60,78 @@ void freqMeas(){
         TA1CTL = MC_0 ; // Stop Timer
 }
 //-------------------------------------------------------------
+//                         Count Timer A0
+//-------------------------------------------------------------
+void count_timer() {
+    char unit_start = 0x30, tens_start = 0x30;
+    char seconds_unit = unit_start, seconds_tens = tens_start;
+    char minutes_unit = unit_start, minutes_tens = tens_start;
+    int dir = 1; // 1-> count up / 0 -> count down
+    int change = 1;
+    int flag = 1;
+    char unit_edge, tens_edge; // represents 0;
+    lcd_clear();
+    lcd_puts("00:00\0");
+    startTimerA0();
+    while (state==state2) {
+        lcd_home();
+        // sprintf(disp_str, "%d:%d", min_txt, sec_txt);
+        // lcd_puts(disp_str);
+        // sprintf(min_txt, "%d%d", minutes_tens, minutes_unit);
+        // sprintf(sec_txt, "%d%d", seconds_tens, seconds_unit);
+        // lcd_puts(min_txt);
+        lcd_data(minutes_tens);
+        lcd_data(minutes_unit);
+        lcd_cursor_right();
+        lcd_data(seconds_tens);
+        lcd_data(seconds_unit);
+        if (is_sw_up()) {
+            if (dir && flag) { // count up
+                change = 1;
+                unit_start = tens_start = 0x30;
+                unit_edge = 0x32; tens_edge = 0x31;
+                seconds_unit = unit_start; seconds_tens = tens_start;
+                minutes_unit = unit_start; minutes_tens = tens_start;
+                flag = 0;
+            }
+            else if (flag) { // count down
+                change = -1;
+                unit_start = unit_edge; tens_start = tens_edge;
+                unit_edge = tens_edge = 0x30;
+                seconds_unit = unit_start; seconds_tens = tens_start;
+                minutes_unit = unit_start; minutes_tens = tens_start;
+                flag = 0;
+            }
+            if (minutes_tens==tens_edge && minutes_unit==unit_edge && seconds_tens==tens_edge && seconds_unit==unit_edge) {
+                dir = !dir;
+                flag = 1;
+            }
+            else if (seconds_tens==tens_edge && seconds_unit==unit_edge) {
+                seconds_tens = tens_start;
+                seconds_unit = unit_start;
+                if (minutes_unit==unit_edge) {
+                    minutes_tens += change;
+                    minutes_unit = unit_start;
+                }
+                else {
+                    minutes_unit += change;
+                }
+            }
+            else if (seconds_unit==unit_edge) {
+                seconds_tens += change;
+                seconds_unit = unit_start;
+            }
+            else {
+                seconds_unit += change;
+            }
+        }
+        startTimerA0();
+        startTimerA0();
+    }
+    __bis_SR_register(LPM0_bits + GIE);
+
+}
+//-------------------------------------------------------------
 //                         CountDown
 //-------------------------------------------------------------
 void CountDown(){
@@ -70,7 +142,7 @@ void CountDown(){
         if (state == state2){
             lcd_cmd(0x02);
             if( i == 0){
-              char const * startWatch ="01:00";
+              char const * startWatch ="00:00";
               lcd_puts(startWatch);
               startTimerA0();
               startTimerA0();
@@ -87,7 +159,7 @@ void CountDown(){
                 dozen = dozen-1;
               }
               startTimerA0();
-             startTimerA0();
+              startTimerA0();
             }
         }
         else
@@ -98,10 +170,10 @@ void CountDown(){
 
 }
 //-------------------------------------------------------------
-//              StartTimer For Count Down
+//              Timer 1sec delay
 //-------------------------------------------------------------
 void startTimerA0(){
-    TACCR0 = 0x0000;  // Chhange to last value used!
+    TACCR0 = 0xffff;
     TA0CTL = TASSEL_2 + MC_1 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
     // ACLK doesn't work on our msp, so we have to use smclk and divide the freq to get to 1 sec.
     __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt

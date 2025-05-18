@@ -27,6 +27,9 @@ int main(void)
       case state1:
         freqMeas();
         break;
+      case state2:
+        count_timer();
+        break;
       default:
         state=state0;
         break;

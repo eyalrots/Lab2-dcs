@@ -9,16 +9,16 @@ void GPIOconfig(void){
   WDTCTL = WDTHOLD | WDTPW;		      // Stop WDT
    
   // SW0 configuration
-  SW0_DIR        &= ~0x01             // P2.0 -> input
-  SW0_SEL        &= ~0x01             // P2.0 -> GPIO
-//   SW0_INT_PEND   &= ~0x01             // P2.0 -> clear pending interupts
-//   SW0_INT_EN     |= 0x01              // P2.0 -> enable interupts
-//   SW0_INT_SEL    &= ~0x01             // P2.0 -> interupt egde sel (l2h)
+  SW0_DIR        &= ~0x01;            // P2.0 -> input
+  SW0_SEL        &= ~0x01;            // P2.0 -> GPIO
+//   SW0_INT_PEND   &= ~0x01          // P2.0 -> clear pending interupts
+//   SW0_INT_EN     |= 0x01           // P2.0 -> enable interupts
+//   SW0_INT_SEL    &= ~0x01          // P2.0 -> interupt egde sel (l2h)
 
   // LCD configuration
   LCD_DATA_WRITE &= ~0xF0;            // Bit clear P1.4-P1.7
   LCD_DATA_DIR   |= 0xF0;             // P1.4-P1.7 -> output('1')
-  LCD_DATA_SEL   &= ~0xF0;		      // GPIO capabilities
+  LCD_DATA_SEL   &= ~0xF0;		        // GPIO capabilities
   LCD_CTL_SEL    &= ~0xE0;            // Bit clear P2.5-P2.7
   
   // Generator Setup
@@ -64,8 +64,8 @@ void TIMER1_A1_config(void){
 void TIMER0_A0_config(void){
     WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
     TA0CCTL0 = CCIE;
-    TACCR0 = 0x0000;
-    TA0CTL = TASSEL_2 + MC_3 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
+    TACCR0 = 0xffff;
+    TA0CTL = TASSEL_2 + MC_0 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
     //__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
 } 
 

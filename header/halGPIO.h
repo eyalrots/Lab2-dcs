@@ -13,6 +13,7 @@ extern void enable_interrupts();
 extern void disable_interrupts();
 extern void write_freq_tmp_LCD();
 extern void write_signal_shape_tmp_LCD();
+extern int  is_sw_up();
 
 extern __interrupt void PBs_handler(void);
 extern __interrupt void PBs_handler_P2(void);

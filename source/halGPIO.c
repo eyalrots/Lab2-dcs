@@ -25,13 +25,11 @@ void sysConfig(void){
 // void SetByteToPort(char ch){
 // 	PBsArrPortOut |= ch;  
 // } 
+//                      END!
 //--------------------------------------------------------------------
-// 				Clear Port Byte
+// 				read switch
 //--------------------------------------------------------------------
-// void clrPortByte(char ch){
-// 	PBsArrPortOut &= ~ch;
-// } 
-//                  END OF WHAT I DON'T KNOW :)
+int is_sw_up(){return SW0_PORT==1;} 
 //---------------------------------------------------------------------
 //            Polling based Delay function
 //---------------------------------------------------------------------
