@@ -38,8 +38,8 @@ void freqMeas(){
             __bis_SR_register(LPM0_bits + GIE);              // Enter LPM0
             if(REdge1 == 0 && REdge2 == 0)  // first time
               continue;
-            tmp = 1.05915;  // after calc the error
-            N_SMCLK = 0.9*(REdge2 - REdge1)*tmp;
+            //tmp = 1.05915;  // after calc the error
+            N_SMCLK = (REdge2 - REdge1); // 0.9*tmp
             freq = SMCLK_FREQ / N_SMCLK;       // Calculate Frequency
             real_freq = (unsigned int) freq ;
             // if (real_freq == 65535)  // delete later
@@ -101,7 +101,7 @@ void CountDown(){
 //              StartTimer For Count Down
 //-------------------------------------------------------------
 void startTimerA0(){
-    TACCR0 = 0xFFFF;  // Timer Cycles - max
+    TACCR0 = 0x0000;  // Chhange to last value used!
     TA0CTL = TASSEL_2 + MC_1 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
     // ACLK doesn't work on our msp, so we have to use smclk and divide the freq to get to 1 sec.
     __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt

@@ -10,6 +10,7 @@ extern void startTimerA0();
 extern void freqCounter();
 extern void tone_generator();
 extern void Signal_shape();
+extern void freqMeas();
 
 
 

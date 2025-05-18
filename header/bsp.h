@@ -18,6 +18,14 @@
 // #define P2Sel          P2SEL
 // #define P2Mask         0xf0
 
+// SW0 abstraction
+#define SW0_SEL				P2SEL
+#define SW0_DIR				P2DIR
+#define SW0_PORT			P2IN
+// #define SW0_INT_PEND		P2IFG
+// #define SW0_INT_EN  		P2IE
+// #define SW0_INT_SEL			P2IES
+
 // LCDs abstraction
 #define LCD_DATA_WRITE		P1OUT
 #define LCD_DATA_DIR		P1DIR

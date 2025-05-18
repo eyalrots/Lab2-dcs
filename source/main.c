@@ -19,6 +19,18 @@ int main(void)
   // lcd_puts("test-1");
   test_lcd();
 
-  while(1);
+  while(1) {
+    switch (state) {
+      case state0:
+        enterLPM(mode0);
+        break;
+      case state1:
+        freqMeas();
+        break;
+      default:
+        state=state0;
+        break;
+    }
+  }
 }
 

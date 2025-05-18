@@ -6,31 +6,38 @@
 void GPIOconfig(void){
  // volatile unsigned int i; // in case of while loop usage
   
-  WDTCTL = WDTHOLD | WDTPW;		// Stop WDT
+  WDTCTL = WDTHOLD | WDTPW;		      // Stop WDT
    
+  // SW0 configuration
+  SW0_DIR        &= ~0x01             // P2.0 -> input
+  SW0_SEL        &= ~0x01             // P2.0 -> GPIO
+//   SW0_INT_PEND   &= ~0x01             // P2.0 -> clear pending interupts
+//   SW0_INT_EN     |= 0x01              // P2.0 -> enable interupts
+//   SW0_INT_SEL    &= ~0x01             // P2.0 -> interupt egde sel (l2h)
+
   // LCD configuration
   LCD_DATA_WRITE &= ~0xF0;            // Bit clear P1.4-P1.7
-  LCD_DATA_DIR |= 0xF0;               // P1.4-P1.7 -> output('1')
-  LCD_DATA_SEL &= ~0xF0;		      // GPIO capabilities
-  LCD_CTL_SEL  &= ~0xE0;              // Bit clear P2.5-P2.7
+  LCD_DATA_DIR   |= 0xF0;             // P1.4-P1.7 -> output('1')
+  LCD_DATA_SEL   &= ~0xF0;		      // GPIO capabilities
+  LCD_CTL_SEL    &= ~0xE0;            // Bit clear P2.5-P2.7
   
   // Generator Setup
   // From the table at CCIx P2.4
-  GenPortDir  &=  ~BIT4;              // P2.4 Input Capture('0')
-  GenPortSel  |=  BIT4;              // P2.4 Select = '1'
+  GenPortDir     &=  ~BIT4;           // P2.4 Input Capture('0')
+  GenPortSel     |=  BIT4;            // P2.4 Select = '1'
 
   // Buzzer Setup
-  BuzzPortDir |=  BIT2;               // P2.2 Output compare = '1'
-  BuzzPortSel |=  BIT2;               // P2.2 Select = '1'
-  BuzzPortOut &=  ~BIT2;              // P2.2 out = '0'
+  BuzzPortDir    |=  BIT2;            // P2.2 Output compare = '1'
+  BuzzPortSel    |=  BIT2;            // P2.2 Select = '1'
+  BuzzPortOut    &=  ~BIT2;           // P2.2 out = '0'
   
   // PushButtons Setup
-  PBsArrPortSel &= ~0x0F;             // GPIO capability
-  PBsArrPortDir &= ~0x0F;             // input direction
-  PBsArrIntEdgeSel |= 0x03;  	        // pull-up mode
+  PBsArrPortSel  &= ~0x0F;            // GPIO capability
+  PBsArrPortDir  &= ~0x0F;            // input direction
+  PBsArrIntEdgeSel |= 0x03;  	      // pull-up mode
   PBsArrIntEdgeSel &= ~0x0C;          // pull-down mode
-  PBsArrIntEn |= 0x0f;
-  PBsArrIntPend &= ~0x0F;             // clear pending interrupts 
+  PBsArrIntEn    |= 0x0f;
+  PBsArrIntPend  &= ~0x0F;            // clear pending interrupts 
   
   _BIS_SR(GIE);                     // enable interrupts globally
 }                             
@@ -40,7 +47,7 @@ void GPIOconfig(void){
 //-------------------------------------------------------------------------------------
 void TIMER1_A2_config(void){
     TA1CCTL2 = CAP + CM_1 + CCIE + SCS + CCIS_0; // Timer1 configuration;
-    // CM_1 - * Capture mode: 1 - pos. edge */
+    // CM_1 - /* Capture mode: 1 - pos. edge */
     // SCS - /* Capture synchronize */
 }
 
@@ -57,8 +64,8 @@ void TIMER1_A1_config(void){
 void TIMER0_A0_config(void){
     WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
     TA0CCTL0 = CCIE;
-    TACCR0 = 0xFFFF;
-    TA0CTL = TASSEL_2 + MC_0 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
+    TACCR0 = 0x0000;
+    TA0CTL = TASSEL_2 + MC_3 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
     //__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
 } 
 

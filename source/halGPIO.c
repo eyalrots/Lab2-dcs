@@ -268,12 +268,12 @@ void __attribute__ ((interrupt(TIMER1_A1_VECTOR))) TIMER1_A1_ISR (void)
                       // Rising Edge was captured
                       if (!Count)
                       {
-                          REdge1 = TA1CCR2;
-                          Count++;
+                          REdge1 = TA1CCR2; // First rising edge (t_s)
+                          Count++;          // count++ for knowing to save to secong rising edge (t_f)
                       }
                       else
                       {
-                          REdge2 = TA1CCR2;
+                          REdge2 = TA1CCR2; // second rising edge (t_f)
                           TA1CCTL2 &= ~CCIE;
                           Count=0x0;
                           __bic_SR_register_on_exit(LPM0_bits + GIE);  // Exit LPM0 on return to main
@@ -376,7 +376,6 @@ void __attribute__ ((interrupt(TIMER0_A0_VECTOR))) Timer_A (void)
 #error Compiler not supported!
 #endif
 {
-
     LPM0_EXIT;
     TACTL = MC_0+TACLR;
 }
