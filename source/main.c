@@ -13,10 +13,8 @@ int main(void)
   lpm_mode = mode0;
 
   sysConfig();
-  //enable_interrupts();
   lcd_init();
   lcd_clear();
-  // lcd_puts("test-1");
   test_lcd();
 
   while(1) {
@@ -25,10 +23,13 @@ int main(void)
         enterLPM(mode0);
         break;
       case state1:
-        freqMeas();
+        freq_measure();
         break;
       case state2:
-        count_timer();
+        count_timer_2();
+        break;
+      case state3:
+        tone_generator();
         break;
       default:
         state=state0;

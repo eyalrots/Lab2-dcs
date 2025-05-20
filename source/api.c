@@ -6,242 +6,144 @@
 extern volatile FSM_state_t state;
 extern volatile SYS_mode_t lpm_mode;
 
+const long SMCLK_FREQ = 1091000;
+
 unsigned int REdge1, REdge2;
-#define ADC_NUMBER_CAPTURES 100
-unsigned int adcCaptureValues[ADC_NUMBER_CAPTURES];
-unsigned int adcCapturePointer;
 
 // Test LCD drivers
 void test_lcd() {
     test_lcd_drivers();
 }
 
-
 //-------------------------------------------------------------
 //              Frequency Measurement
 //-------------------------------------------------------------
-void freqMeas(){
+void freq_measure(){
         WDTCTL = WDTPW + WDTHOLD;
-        float N_SMCLK;
-        float freq;
-        float tmp = 0;
-        const float SMCLK_FREQ = 1048576;   // 2^20
-        unsigned int real_freq;
-        char strFreq[6] = {'\0'};
-        write_freq_tmp_LCD(); // Write template of Frequency
-        TA1CTL |= TASSEL_2 + MC_2 + TACLR;         //start Timer
+        unsigned int n_smclk;
+        unsigned int freq;
+        // Write template of Frequency
+        lcd_clear();
+        write_freq_tmp_LCD();
+        //start Timer
+        TA1CTL |= TASSEL_2 + MC_2 + TACLR;
         while(state == state1){
             disable_interrupts();
-            strFreq[6] = '\0';   // Reset strFreq
             REdge2 = REdge1 =  0;
-            TA1CCTL2 |= CCIE;                                // enable interrupt
-            __bis_SR_register(LPM0_bits + GIE);              // Enter LPM0
-            if(REdge1 == 0 && REdge2 == 0)  // first time
-              continue;
-            //tmp = 1.05915;  // after calc the error
-            N_SMCLK = (REdge2 - REdge1); // 0.9*tmp
-            freq = SMCLK_FREQ / N_SMCLK;       // Calculate Frequency
-            real_freq = (unsigned int) freq ;
-            // if (real_freq == 65535)  // delete later
-            //     continue;
-            sprintf(strFreq, "%d", real_freq);
-            write_freq_tmp_LCD();
-            lcd_home();
-            lcd_cursor_right();
-            lcd_cursor_right();
-            lcd_cursor_right();
-            lcd_cursor_right();
-            lcd_puts(strFreq);
+            // enable interrupt
+            TA1CCTL2 |= CCIE;
+            // Enter LPM0
+            __bis_SR_register(LPM0_bits + GIE);
+            n_smclk = REdge2 - REdge1;
+            // Calculate Frequency
+            if (n_smclk != 0) {
+                freq = SMCLK_FREQ / n_smclk;
+            }
+            // display operation
+            print_num(freq, 9, 5, 0x20);
 
             cursor_off;
             DelayMs(500);
             enable_interrupts();
         }
+        lcd_clear();
         TA1CTL = MC_0 ; // Stop Timer
+}
+//-------------------------------------------------------------
+// prints a number (num) to lcd at location (start) going left ->
+// -> with max length (len) and a fill character (fill) for when len(num)<len.
+//-------------------------------------------------------------
+void print_num(unsigned int num, int start, int len, char fill) {
+    lcd_home();
+    unsigned int i;
+    char digit;
+    for (i=start; i>0; i--) lcd_cursor_right();
+    i=0;
+    while (num != 0) {
+        digit  = num % 10 + 0x30;
+        num /= 10;
+        lcd_cursor_left();
+        lcd_data(digit);
+        lcd_cursor_left();
+        i++;
+    }
+    while (i < len) {
+        lcd_cursor_left();
+        lcd_data(fill);
+        lcd_cursor_left();
+        i++;
+    }
 }
 //-------------------------------------------------------------
 //                         Count Timer A0
 //-------------------------------------------------------------
-void count_timer() {
-    char unit_start = 0x30, tens_start = 0x30;
-    char seconds_unit = unit_start, seconds_tens = tens_start;
-    char minutes_unit = unit_start, minutes_tens = tens_start;
-    int dir = 1; // 1-> count up / 0 -> count down
-    int change = 1;
-    int flag = 1;
-    char unit_edge, tens_edge; // represents 0;
+void count_timer_2() {
+    int sec=0, min=0;
+    int start=0, edge=59;
+    int dir=1, change=1, flag=0;
     lcd_clear();
     lcd_puts("00:00\0");
-    startTimerA0();
     while (state==state2) {
-        lcd_home();
-        // sprintf(disp_str, "%d:%d", min_txt, sec_txt);
-        // lcd_puts(disp_str);
-        // sprintf(min_txt, "%d%d", minutes_tens, minutes_unit);
-        // sprintf(sec_txt, "%d%d", seconds_tens, seconds_unit);
-        // lcd_puts(min_txt);
-        lcd_data(minutes_tens);
-        lcd_data(minutes_unit);
-        lcd_cursor_right();
-        lcd_data(seconds_tens);
-        lcd_data(seconds_unit);
+        // check switch
         if (is_sw_up()) {
-            if (dir && flag) { // count up
-                change = 1;
-                unit_start = tens_start = 0x30;
-                unit_edge = 0x32; tens_edge = 0x31;
-                seconds_unit = unit_start; seconds_tens = tens_start;
-                minutes_unit = unit_start; minutes_tens = tens_start;
-                flag = 0;
+            // change direction
+            if (flag) {
+                change = start;
+                start = edge;
+                edge = change;                
+                change = dir ? 1 : -1;
+                flag = !flag;
             }
-            else if (flag) { // count down
-                change = -1;
-                unit_start = unit_edge; tens_start = tens_edge;
-                unit_edge = tens_edge = 0x30;
-                seconds_unit = unit_start; seconds_tens = tens_start;
-                minutes_unit = unit_start; minutes_tens = tens_start;
-                flag = 0;
-            }
-            if (minutes_tens==tens_edge && minutes_unit==unit_edge && seconds_tens==tens_edge && seconds_unit==unit_edge) {
+            // count logic
+            if (min==edge && sec==edge) {
                 dir = !dir;
-                flag = 1;
+                flag = !flag;
             }
-            else if (seconds_tens==tens_edge && seconds_unit==unit_edge) {
-                seconds_tens = tens_start;
-                seconds_unit = unit_start;
-                if (minutes_unit==unit_edge) {
-                    minutes_tens += change;
-                    minutes_unit = unit_start;
-                }
-                else {
-                    minutes_unit += change;
-                }
-            }
-            else if (seconds_unit==unit_edge) {
-                seconds_tens += change;
-                seconds_unit = unit_start;
+            else if (sec==edge) {
+                sec = start;
+                min+=change;
             }
             else {
-                seconds_unit += change;
+                sec+=change;
             }
+            // print
+            print_num(sec, 5, 2, 0x30);
+            print_num(min, 2, 2, 0x30);
+            cursor_off;
         }
+        // wait for ~1sec, then continue with count
         startTimerA0();
         startTimerA0();
     }
-    __bis_SR_register(LPM0_bits + GIE);
-
+    lcd_clear();
 }
-//-------------------------------------------------------------
-//                         CountDown
-//-------------------------------------------------------------
-void CountDown(){
-      int i;
-      char dozen = 0x35;  // '5'
-      char unity = 0x39; // '9'
-      for (i =  0 ; i <= 60 ; i++){
-        if (state == state2){
-            lcd_cmd(0x02);
-            if( i == 0){
-              char const * startWatch ="00:00";
-              lcd_puts(startWatch);
-              startTimerA0();
-              startTimerA0();
-            }
-            else {
-              char const * minstr ="00:";
-              lcd_puts(minstr);
-              lcd_data(dozen);
-              lcd_data(unity);
-
-              unity = unity -1;
-              if( unity == 0x2F){
-                unity = 0x39;
-                dozen = dozen-1;
-              }
-              startTimerA0();
-              startTimerA0();
-            }
-        }
-        else
-        {
-            break;
-        }
-      }
-
-}
-//-------------------------------------------------------------
-//              Timer 1sec delay
-//-------------------------------------------------------------
-void startTimerA0(){
-    TACCR0 = 0xffff;
-    TA0CTL = TASSEL_2 + MC_1 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
-    // ACLK doesn't work on our msp, so we have to use smclk and divide the freq to get to 1 sec.
-    __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
-}
-
 //-------------------------------------------------------------
 //              Tone Generator
 //-------------------------------------------------------------
 void tone_generator(){
-    TA1CTL = TASSEL_2 + MC_1;                  // SMCLK, upmode
+    // SMCLK, upmode
+    TA1CTL = TASSEL_2 + MC_1;                           
+    lcd_puts("state-3");
     while(state == state3){
-        ADC10CTL0 |= ENC + ADC10SC;             // Start sampling
-        __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
-        ADC10CTL0 &= ~ADC10ON; // Don't get into interrupt
-
-        unsigned int adc_conv = ADC10MEM;
-        float coeff = 1.956;  // coeff = 2000 / 1023;
-        float f_out = coeff * adc_conv + 1000;  // Choose Linear Mapping
-
-        float SMCLK_FREQ = 1048576; // SMCLK freq 2^20
+        // Start sampling
+        ADC10CTL0 |= ENC + ADC10SC;                     
+        // Enter LPM0 w/ interrupt
+        __bis_SR_register(LPM0_bits + GIE);       
+        // Don't get into interrupt
+        ADC10CTL0 &= ~ADC10ON;                          
+        // Get value of ADC
+        unsigned int adc_val = ADC10MEM;
+        // Calculate f_out
+        unsigned int f_out = 1.956 * adc_val + 1000;
+        // Calculate period of pwm
         unsigned int period_to_pwm = SMCLK_FREQ/f_out;
 
         TA1CCR0 = period_to_pwm;
         TA1CCR1 = (int) period_to_pwm/2;
 
     }
-    TA1CTL = MC_0 ; // Stop Timer
+    lcd_clear();
+    // Stop Timer
+    TA1CTL = MC_0 ;
 }
-
-//-------------------------------------------------------------
-//              Signal Shape
-//-------------------------------------------------------------
-
-void Signal_shape(){
-        while(state == state4){
-            ADC10CTL0 |= ENC + ADC10SC;             // Start sampling
-            __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
-            ADC10CTL0 &= ~ADC10ON; // Don't get into interrupt
-            char * strLCD;
-            if(adcCapturePointer < ADC_NUMBER_CAPTURES) adcCaptureValues[adcCapturePointer++] = ADC10MEM;
-            else {
-                adcCapturePointer = 0;
-                unsigned int i;
-                unsigned int low_val_counter;
-                unsigned int high_val_counter;
-                unsigned int tri_counter;
-                low_val_counter = 0;
-                high_val_counter = 0;
-                tri_counter = 0;
-                for (i=1;i<ADC_NUMBER_CAPTURES-1;i++){
-                    //pwm
-                    if(adcCaptureValues[i] <= 5) low_val_counter ++;
-                    else if (adcCaptureValues[i] >= 800) high_val_counter ++;
-                    // tri
-                    if(abs(2*adcCaptureValues[i]-adcCaptureValues[i-1]-adcCaptureValues[i+1])<3) tri_counter++;
-
-
-                }
-                if (low_val_counter > 5 && high_val_counter > 5) strLCD = "pwm";
-                else if (tri_counter > 16) strLCD = "tri";
-                else strLCD = "sin";
-                DelayMs(500);
-                write_signal_shape_tmp_LCD();
-                lcd_puts(strLCD);
-            }
-
-        }
-}
-
-
 

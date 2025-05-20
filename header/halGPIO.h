@@ -5,14 +5,11 @@
 // #include  "../header/app.h"    		// private library - APP layer
 
 extern void sysConfig(void);
-extern void SetByteToPort(char); // Added By RK
-extern void clrPortByte(char);
 extern void delay(unsigned int);
 extern void enterLPM(unsigned char);
 extern void enable_interrupts();
 extern void disable_interrupts();
 extern void write_freq_tmp_LCD();
-extern void write_signal_shape_tmp_LCD();
 extern int  is_sw_up();
 
 extern __interrupt void PBs_handler(void);
@@ -78,14 +75,8 @@ extern void lcd_init();
 extern void lcd_strobe();
 extern void DelayMs(unsigned int);
 extern void DelayUs(unsigned int);
+extern void startTimerA0();
 extern void test_lcd_drivers();
-/*
- *  Delay functions for HI-TECH C on the PIC18
- *
- *  Functions available:
- *      DelayUs(x)  Delay specified number of microseconds
- *      DelayMs(x)  Delay specified number of milliseconds
-*/
 
 #endif
 

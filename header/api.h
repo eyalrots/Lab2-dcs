@@ -5,15 +5,10 @@
 
 
 extern void test_lcd();
-extern void CountDown();
-extern void startTimerA0();
-extern void freqCounter();
 extern void tone_generator();
-extern void Signal_shape();
-extern void freqMeas();
-extern void count_timer();
-
-
+extern void freq_measure();
+extern void count_timer_2();
+extern void print_num(unsigned int, int, int, char);
 
 
 #endif

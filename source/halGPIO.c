@@ -18,18 +18,9 @@ void sysConfig(void){
 	ADCconfig();
 }
 //--------------------------------------------------------------------
-//                   DON'T KNOW WAHT ITS FOR!
-//--------------------------------------------------------------------
-// 				Set Byte to Port
-//--------------------------------------------------------------------
-// void SetByteToPort(char ch){
-// 	PBsArrPortOut |= ch;  
-// } 
-//                      END!
-//--------------------------------------------------------------------
 // 				read switch
 //--------------------------------------------------------------------
-int is_sw_up(){return SW0_PORT==1;} 
+int is_sw_up(){return (SW0_PORT&0x01)==1;} 
 //---------------------------------------------------------------------
 //            Polling based Delay function
 //---------------------------------------------------------------------
@@ -65,8 +56,6 @@ void enable_interrupts(){
 void disable_interrupts(){
   _BIC_SR(GIE);
 }
-
-
 //---------------------------------------------------------------------
 //            LCD
 //---------------------------------------------------------------------
@@ -154,16 +143,6 @@ void test_lcd_drivers(){
     lcd_new_line;
 }
 //******************************************************************
-//    write signal shape template to LCD
-//******************************************************************
-void write_signal_shape_tmp_LCD(){
-   lcd_clear();
-   lcd_home();
-    const char signal_shape[] = "signal shape: ";
-     lcd_puts(signal_shape);
-     lcd_new_line;
-}
-//******************************************************************
 // initialize the LCD -> copied
 //******************************************************************
 void lcd_init(){
@@ -240,8 +219,15 @@ void DelayMs(unsigned int cnt){
     for(i=cnt ; i>0 ; i--) DelayUs(1000); // tha command asm("nop") takes raphly 1usec
 
 }
-
-
+//-------------------------------------------------------------
+//              Timer 1sec delay
+//-------------------------------------------------------------
+void startTimerA0(){
+    TACCR0 = 0xffff;
+    TA0CTL = TASSEL_2 + MC_1 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
+    // ACLK doesn't work on our msp, so we have to use smclk and divide the freq to get to 1 sec.
+    __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
+}
 //*********************************************************************
 //            TimerA1 Interrupt Service Routine
 //*********************************************************************
@@ -286,82 +272,6 @@ void __attribute__ ((interrupt(TIMER1_A1_VECTOR))) TIMER1_A1_ISR (void)
       default:  break;
   }
 }
-
-// ****************Second method for Frequency measure: ***********
-//switch(__even_in_range(TA1IV, 0x0A))
-//  {
-//      case  TA1IV_NONE: break;              // Vector  0:  No interrupt
-//      case  TA1IV_TACCR1:                   // Vector  2:  TACCR1 CCIFG
-//          TA1CTL &= ~(TAIFG);
-//        break;
-//      case TA1IV_TACCR2:                    // Vector  4:  TACCR2 CCIFG
-//         // signalFreq = 0;
-//          timerAcaptureValues[timerAcapturePointer++] = TA1CCR2;
-//          if (timerAcapturePointer >= NUMBER_TIMER_CAPTURES)
-//                      {
-//                          unsigned int i, difference; //implement average of capture buffer differences (19)
-//                          long temp;
-//                          sum = 0;
-//
-//                          //calculate difference between current value and previous value for buffer
-//                          for (i=1;i<NUMBER_TIMER_CAPTURES;i++)
-//                          {
-//                              if (timerAcaptureValues[i] < timerAcaptureValues[i-1])
-//                              {
-//                                  //if prev value > new value, add 65535 then find difference
-//                                  temp = timerAcaptureValues[i] + 65535;
-//                                  difference = temp - timerAcaptureValues[i-1];
-//                              }
-//                              else
-//                              {
-//                                  //if prev value < new value, find difference
-//                                  difference = timerAcaptureValues[i] - timerAcaptureValues[i-1];
-//                              }
-//
-//                              sum += difference;  //sum up all the differences
-//                          }
-//                          TA1CCTL2 &= ~CCIE;
-//                          __bic_SR_register_on_exit(LPM0_bits + GIE);  // Exit LPM0 on return to main
-//                      }
-//          break;
-//      case TA1IV_6: break;                  // Vector  6:  Reserved CCIFG
-//      case TA1IV_8: break;                  // Vector  8:  Reserved CCIFG
-//      case TA1IV_TAIFG: break;              // Vector 10:  TAIFG
-//      default:  break;
-//  }
-
-//****************** Then in the api function: *******************
-//void freqCounter(){
-//        WDTCTL = WDTPW + WDTHOLD;
-//      //  float SMCLK_FREQ = 1048576;   // 2^20
-//        unsigned int real_freq;
-//        char strFreq[20] = {'\0'};
-//        write_freq_tmp_LCD(); // Write template of Frequency
-//        TA1CTL |= TASSEL_2 + MC_2 + TACLR;         //start Timer
-//        while(state == state1){
-//            disable_interrupts();
-//            strFreq[20] = '\0';   // Reset strFreq
-//            TA1CCTL2 |= CCIE;                                // enable interrupt
-//            __bis_SR_register(LPM0_bits + GIE);              // Enter LPM0
-//            timerAcapturePointer = 0;
-//            sum = sum / NUMBER_TIMER_CAPTURES-1;         //take average of all differences
-//            signalFreq = 1038090 / sum; //calculate frequency (SMCLK/difference)
-//            real_freq = (unsigned int) signalFreq ;
-//            sprintf(strFreq, "%d", real_freq);
-//            write_freq_tmp_LCD();
-//            lcd_home();
-//            lcd_cursor_right();
-//            lcd_cursor_right();
-//            lcd_cursor_right();
-//            lcd_cursor_right();
-//            lcd_puts(strFreq);
-//
-//            cursor_off;
-//            DelayMs(1500);
-//            enable_interrupts();
-//        }
-//        TA1CTL = MC_0 ; // Stop Timer
-//}
 //*********************************************************************
 //            TimerA0 Interrupt Service Routine
 //*********************************************************************
@@ -377,7 +287,6 @@ void __attribute__ ((interrupt(TIMER0_A0_VECTOR))) Timer_A (void)
     LPM0_EXIT;
     TACTL = MC_0+TACLR;
 }
-
 //*********************************************************************
 //            ADC10 Vector Interrupt Service Routine
 //*********************************************************************
@@ -386,8 +295,6 @@ __interrupt void ADC10_ISR (void)
 {
     __bic_SR_register_on_exit(CPUOFF);
 }
-
-
 //*********************************************************************
 //            Port1 Interrupt Service Routine
 //*********************************************************************
@@ -436,8 +343,6 @@ __interrupt void ADC10_ISR (void)
 	}
         
 }
-
-
 //*********************************************************************
 //            Port2 Interrupt Service Routine
 //*********************************************************************
@@ -475,9 +380,4 @@ __interrupt void ADC10_ISR (void)
           LPM4_EXIT; // must be called from ISR only
           break;
       }
-  }
-
-
-
-
-
+}

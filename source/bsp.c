@@ -11,9 +11,6 @@ void GPIOconfig(void){
   // SW0 configuration
   SW0_DIR        &= ~0x01;            // P2.0 -> input
   SW0_SEL        &= ~0x01;            // P2.0 -> GPIO
-//   SW0_INT_PEND   &= ~0x01          // P2.0 -> clear pending interupts
-//   SW0_INT_EN     |= 0x01           // P2.0 -> enable interupts
-//   SW0_INT_SEL    &= ~0x01          // P2.0 -> interupt egde sel (l2h)
 
   // LCD configuration
   LCD_DATA_WRITE &= ~0xF0;            // Bit clear P1.4-P1.7

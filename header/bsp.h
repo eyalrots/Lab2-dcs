@@ -4,27 +4,12 @@
 #include  <msp430g2553.h>     // MSP430x2xx
 // #include  <msp430xG46x.h>  // MSP430x4xx
 
-#define   debounceVal      250 //dont know
-// #define   LEDs_SHOW_RATE   0xFFFF  // 62_5ms
-
-// LEDs abstraction
-// #define LEDsArrPort        P1OUT
-// #define LEDsArrPortDir     P1DIR
-// #define LEDsArrPortSel     P1SEL
-
-// P2forWave(out) abstraction
-// #define P2Out          P2OUT
-// #define P2Dir          P2DIR
-// #define P2Sel          P2SEL
-// #define P2Mask         0xf0
+#define   debounceVal      250
 
 // SW0 abstraction
 #define SW0_SEL				P2SEL
 #define SW0_DIR				P2DIR
 #define SW0_PORT			P2IN
-// #define SW0_INT_PEND		P2IFG
-// #define SW0_INT_EN  		P2IE
-// #define SW0_INT_SEL			P2IES
 
 // LCDs abstraction
 #define LCD_DATA_WRITE		P1OUT
