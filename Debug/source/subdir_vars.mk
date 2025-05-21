@@ -36,7 +36,6 @@ C_DEPS__QUOTED += \
 "source\main.d" 
 
 C_SRCS__QUOTED += \
-"../source/api.c" \
 "../source/bsp.c" \
 "../source/halGPIO.c" \
 "../source/main.c" 

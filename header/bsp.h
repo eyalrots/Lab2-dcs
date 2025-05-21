@@ -6,6 +6,11 @@
 
 #define   debounceVal      250
 
+// lin_tran_time configuration
+#define LIN_PORT			P2OUT
+#define LIN_SEL				P2SEL
+#define LIN_DIR				P2DIR
+
 // SW0 abstraction
 #define SW0_SEL				P2SEL
 #define SW0_DIR				P2DIR
@@ -39,7 +44,15 @@
 #define PB0                0x01
 #define PB1                0x02
 #define PB2                0x04
-#define PB3                0x08
+
+// PushButton 3 abstraction
+#define PB3ArrPort	       P2IN 
+#define PB3ArrIntPend	   P2IFG 
+#define PB3ArrIntEn	       P2IE
+#define PB3ArrIntEdgeSel   P2IES
+#define PB3ArrPortSel      P2SEL 
+#define PB3ArrPortDir      P2DIR 
+#define PB3                0x02
 
 
 extern void GPIOconfig(void);

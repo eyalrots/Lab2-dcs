@@ -146,4 +146,49 @@ void tone_generator(){
     // Stop Timer
     TA1CTL = MC_0 ;
 }
+// check linear transformation time
+void lin_tran_time() {
+    lcd_clear();
+    lcd_puts("state4 - lin\0");
+    int x=999999, y=999999, z;
+    LIN_PORT |= 0x08;
+    while (1) {
+        //transformation
+        LIN_PORT |= 0x08;
+        z=x*y;
+        LIN_PORT &= ~0x08;
+    }
+}
 
+// state 4 - real time task
+void print_b(char b, int start) {
+    int i;
+    for (i=start; i>0; i--) {
+        lcd_cursor_right();
+    }
+    lcd_data(b);
+    cursor_off;
+}
+void rotate_b() {
+    lcd_clear();
+    int start = 0, temp = 0;
+    int flag = 0;
+    while(state==state4) {
+        lcd_init();
+        lcd_clear();
+        flag = start >= 16 ? 1 : 0;
+        if (flag) {
+            lcd_new_line;
+            temp = start-16;
+        }
+        else {
+            lcd_home();
+            temp = start;
+        }
+        print_b(0x42, temp);
+        start = (start+1)&31;
+        startTimerA0();
+        startTimerA0();
+    }
+    lcd_clear();
+}

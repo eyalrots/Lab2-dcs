@@ -8,6 +8,10 @@ void GPIOconfig(void){
   
   WDTCTL = WDTHOLD | WDTPW;		      // Stop WDT
    
+    //linear trans time conf
+    LIN_DIR |= 0x08; //out
+    LIN_SEL &= ~0x08; //GPIO
+
   // SW0 configuration
   SW0_DIR        &= ~0x01;            // P2.0 -> input
   SW0_SEL        &= ~0x01;            // P2.0 -> GPIO
@@ -35,6 +39,13 @@ void GPIOconfig(void){
   PBsArrIntEdgeSel &= ~0x0C;          // pull-down mode
   PBsArrIntEn    |= 0x0f;
   PBsArrIntPend  &= ~0x0F;            // clear pending interrupts 
+
+  // PushButton Setup
+  PB3ArrPortSel  &= ~PB3;            // GPIO capability
+  PB3ArrPortDir  &= ~PB3;            // input direction
+  PB3ArrIntEdgeSel &= ~PB3;          // pull-down mode
+  PB3ArrIntEn    |= PB3;
+  PB3ArrIntPend  &= ~PB3;            // clear pending interrupts 
   
   _BIS_SR(GIE);                     // enable interrupts globally
 }                             
@@ -62,8 +73,7 @@ void TIMER0_A0_config(void){
     WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
     TA0CCTL0 = CCIE;
     TACCR0 = 0xffff;
-    TA0CTL = TASSEL_2 + MC_0 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
-    //__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
+    TA0CTL = TASSEL_2 + MC_0 + ID_3;  //  select: 2 - SMCLK ; control: 1 - Up  ; divider: 3 - /8
 } 
 
 //------------------------------------------------------------------------------------- 

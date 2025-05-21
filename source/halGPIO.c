@@ -224,7 +224,7 @@ void DelayMs(unsigned int cnt){
 //-------------------------------------------------------------
 void startTimerA0(){
     TACCR0 = 0xffff;
-    TA0CTL = TASSEL_2 + MC_1 + ID_3;  //  select: 2 - SMCLK ; control: 3 - Up/Down  ; divider: 3 - /8
+    TA0CTL = TASSEL_2 + MC_1 + ID_3;  //  select: 2 - SMCLK ; control: 1 - Up  ; divider: 3 - /8
     // ACLK doesn't work on our msp, so we have to use smclk and divide the freq to get to 1 sec.
     __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
 }
@@ -352,10 +352,10 @@ __interrupt void ADC10_ISR (void)
 //---------------------------------------------------------------------
 //            selector of transition between states
 //---------------------------------------------------------------------
-    //   if(PB3sArrIntPend & PB3){    // For Main Lab
-    //       state = state4;
-    //       PB3sArrIntPend &= ~PB3;
-    //   }
+      if(PB3ArrIntPend & PB3){    // For Main Lab
+          state = state4;
+          PB3ArrIntPend &= ~PB3;
+      }
 //---------------------------------------------------------------------
 //            Exit from a given LPM
 //---------------------------------------------------------------------

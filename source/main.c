@@ -31,6 +31,9 @@ int main(void)
       case state3:
         tone_generator();
         break;
+      case state4:
+        rotate_b();
+        break;
       default:
         state=state0;
         break;
